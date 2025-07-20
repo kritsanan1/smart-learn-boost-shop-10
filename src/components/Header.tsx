@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { ShoppingCart, Search, Menu, X, Heart, User } from "lucide-react";
+import { ShoppingCart, Search, Menu, X, Heart, User, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 
 export const Header = () => {
+  const { user, signOut } = useAuth();
+  const { getTotalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount] = useState(2);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,15 +55,28 @@ export const Header = () => {
             <Heart className="h-5 w-5" />
           </Button>
           
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
+          {user ? (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground hidden lg:block">
+                {user.user_metadata?.full_name || user.email}
+              </span>
+              <Button variant="ghost" size="icon" onClick={signOut} title="ออกจากระบบ">
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" size="icon" title="เข้าสู่ระบบ">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
 
           <Button variant="ghost" size="icon" className="relative">
             <ShoppingCart className="h-5 w-5" />
-            {cartCount > 0 && (
+            {getTotalItems() > 0 && (
               <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-warning text-xs">
-                {cartCount}
+                {getTotalItems()}
               </Badge>
             )}
           </Button>
@@ -108,16 +125,27 @@ export const Header = () => {
                 <Heart className="h-4 w-4 mr-2" />
                 รายการโปรด
               </Button>
-              <Button variant="ghost" size="sm" className="flex-1">
-                <User className="h-4 w-4 mr-2" />
-                บัญชี
-              </Button>
+              
+              {user ? (
+                <Button variant="ghost" size="sm" className="flex-1" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  ออกจากระบบ
+                </Button>
+              ) : (
+                <Link to="/auth" className="flex-1">
+                  <Button variant="ghost" size="sm" className="w-full">
+                    <User className="h-4 w-4 mr-2" />
+                    เข้าสู่ระบบ
+                  </Button>
+                </Link>
+              )}
+              
               <Button variant="ghost" size="sm" className="relative flex-1">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 ตระกร้า
-                {cartCount > 0 && (
+                {getTotalItems() > 0 && (
                   <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-warning text-xs">
-                    {cartCount}
+                    {getTotalItems()}
                   </Badge>
                 )}
               </Button>
