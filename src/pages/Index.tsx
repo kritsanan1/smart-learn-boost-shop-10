@@ -7,15 +7,67 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Star, BookOpen, Users, Award, TrendingUp, Filter, Heart, ShoppingCart } from "lucide-react";
-import { useBooks } from "@/hooks/useBooks";
-import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 
+// Import product images
+import englishGrammarBook from "@/assets/english-grammar-book.jpg";
+import koreanStartBook from "@/assets/korean-start-book.jpg";
+import japaneseStartBook from "@/assets/japanese-start-book.jpg";
+import chineseStartBook from "@/assets/chinese-start-book.jpg";
+
 const Index = () => {
-  const { books, loading } = useBooks();
-  const { addToCart } = useCart();
   const { toast } = useToast();
   const [selectedFilter, setSelectedFilter] = useState("all");
+
+  const products = [
+    {
+      id: "english-grammar",
+      title: "English Grammar in Simple Steps",
+      price: 250,
+      originalPrice: 300,
+      image: englishGrammarBook,
+      rating: 4.9,
+      reviewCount: 128,
+      description: "คู่มือเรียนไวยากรณ์ภาษาอังกฤษแบบง่าย ๆ เหมาะสำหรับผู้เริ่มต้น มาพร้อมภาพประกอบน่ารักและคำอธิบายชัดเจน",
+      isBestseller: true,
+      stockCount: 15,
+      category: "english"
+    },
+    {
+      id: "korean-start",
+      title: "Korean Start",
+      price: 190,
+      image: koreanStartBook,
+      rating: 4.8,
+      reviewCount: 89,
+      description: "หนังสือเริ่มต้นเรียนภาษาเกาหลี ครอบคลุมพื้นฐานการออกเสียงและคำศัพท์ พร้อมตัวอย่างการใช้งานในชีวิตประจำวัน",
+      isNew: true,
+      stockCount: 8,
+      category: "korean"
+    },
+    {
+      id: "japanese-start",
+      title: "Japanese Start",
+      price: 190,
+      image: japaneseStartBook,
+      rating: 4.7,
+      reviewCount: 95,
+      description: "หนังสือแนะนำภาษาญี่ปุ่นสำหรับผู้เริ่มต้น เน้นการฝึกพื้นฐานไวยากรณ์และการสนทนาเบื้องต้น",
+      stockCount: 12,
+      category: "japanese"
+    },
+    {
+      id: "chinese-start",
+      title: "Chinese Start",
+      price: 190,
+      image: chineseStartBook,
+      rating: 4.6,
+      reviewCount: 76,
+      description: "หนังสือเริ่มต้นเรียนภาษาจีน ช่วยทำความเข้าใจตัวอักษรและการออกเสียง พร้อมคำศัพท์พื้นฐานที่ใช้งานได้จริง",
+      stockCount: 20,
+      category: "chinese"
+    }
+  ];
 
   const stats = [
     { icon: BookOpen, label: "หนังสือภาษา", value: "4+" },
@@ -32,24 +84,15 @@ const Index = () => {
     { id: "chinese", label: "ภาษาจีน" }
   ];
 
-  const filteredBooks = selectedFilter === "all" 
-    ? books 
-    : books.filter(book => book.language === selectedFilter);
+  const filteredProducts = selectedFilter === "all" 
+    ? products 
+    : products.filter(product => product.category === selectedFilter);
 
-  const formatPrice = (priceInCents: number) => {
-    return (priceInCents / 100).toFixed(0);
-  };
-
-  const handleAddToCart = async (bookId: string, bookTitle: string) => {
-    try {
-      await addToCart(bookId);
-      toast({
-        title: "เพิ่มลงตระกร้าสำเร็จ!",
-        description: `${bookTitle} ถูกเพิ่มลงในตระกร้าของคุณแล้ว`,
-      });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
+  const handleAddToCart = (productTitle: string) => {
+    toast({
+      title: "เพิ่มลงตระกร้าสำเร็จ!",
+      description: `${productTitle} ถูกเพิ่มลงในตระกร้าของคุณแล้ว`,
+    });
   };
 
   const handleQuickView = (productTitle: string) => {
@@ -101,12 +144,6 @@ const Index = () => {
             </p>
           </div>
 
-          {loading && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">กำลังโหลดหนังสือ...</p>
-            </div>
-          )}
-
           {/* Filters */}
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             {filters.map((filter) => (
@@ -124,22 +161,12 @@ const Index = () => {
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {filteredBooks.map((book) => (
+            {filteredProducts.map((product) => (
               <ProductCard
-                key={book.id}
-                id={book.id}
-                title={book.title}
-                description={book.description}
-                price={parseInt(formatPrice(book.price))}
-                originalPrice={parseInt(formatPrice(book.price + 5000))} // Add 50 THB as original price
-                image={book.image_url || '/placeholder.jpg'}
-                rating={4.5} // Default rating
-                reviewCount={Math.floor(Math.random() * 200) + 50} // Random reviews for demo
-                isNew={book.is_new}
-                isBestseller={book.is_bestseller}
-                stockCount={book.stock_quantity}
-                onAddToCart={() => handleAddToCart(book.id, book.title)}
-                onQuickView={() => handleQuickView(book.title)}
+                key={product.id}
+                {...product}
+                onAddToCart={() => handleAddToCart(product.title)}
+                onQuickView={() => handleQuickView(product.title)}
               />
             ))}
           </div>
@@ -173,11 +200,11 @@ const Index = () => {
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {books.slice(0, 4).map((book, index) => (
-                    <div key={book.id} className={`${index >= 2 ? 'translate-y-4' : ''}`}>
+                  {products.map((product, index) => (
+                    <div key={product.id} className={`${index >= 2 ? 'translate-y-4' : ''}`}>
                       <img
-                        src={book.image_url || '/placeholder.jpg'}
-                        alt={book.title}
+                        src={product.image}
+                        alt={product.title}
                         className="w-full rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
                       />
                     </div>
